@@ -1,26 +1,111 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 220 20% 95%; /* Light Gray #F0F2F5 */
+    --foreground: 221 44% 15%; /* Darker Navy for text */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 221 44% 15%;
+
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 221 44% 15%;
+
+    --primary: 221 44% 41%; /* Navy Blue #3B5998 */
+    --primary-foreground: 0 0% 98%; /* Light text on Navy */
+
+    --secondary: 220 15% 90%; /* Lighter gray for secondary elements */
+    --secondary-foreground: 221 44% 25%; /* Darker navy text for secondary */
+
+    --muted: 220 15% 85%; /* Muted gray */
+    --muted-foreground: 221 40% 50%; /* Muted navy text */
+
+    --accent: 120 39% 54%; /* Soft Green #5cb85c */
+    --accent-foreground: 0 0% 100%; /* White text on Green */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 88%; /* Border color derived from background */
+    --input: 0 0% 100%; /* White input background */
+    --ring: 221 44% 41%; /* Navy Blue for rings */
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    /* Sidebar specific theme */
+    --sidebar-background: 0 0% 100%; /* White sidebar */
+    --sidebar-foreground: 221 44% 25%; /* Dark navy text */
+    --sidebar-primary: 221 44% 41%; /* Navy for active/primary items */
+    --sidebar-primary-foreground: 0 0% 98%; /* White text on navy */
+    --sidebar-accent: 220 20% 92%; /* Very light gray for hover/accent */
+    --sidebar-accent-foreground: 221 44% 25%; /* Dark navy text on hover */
+    --sidebar-border: 220 15% 88%; /* Consistent border color */
+    --sidebar-ring: 221 44% 41%; /* Consistent ring color */
+  }
+
+  .dark {
+    --background: 221 30% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 221 30% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 221 30% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 221 44% 55%; /* Lighter Navy for dark */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 221 30% 20%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 221 30% 20%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 120 39% 60%; /* Lighter Green for dark */
+    --accent-foreground: 221 30% 10%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 221 30% 25%;
+    --input: 221 30% 25%;
+    --ring: 221 44% 55%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Dark Sidebar specific theme */
+    --sidebar-background: 221 30% 12%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 221 44% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 221 30% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 221 30% 25%;
+    --sidebar-ring: 221 44% 55%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
