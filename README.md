@@ -35,3 +35,14 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # hopeschoolhub
+
+## Appwrite Backend
+
+This project can use [Appwrite](https://appwrite.io) as its backend service. To connect to your own instance create a `.env` file based on `.env.example` and provide your endpoint, project ID, database ID and collection ID.
+
+```bash
+cp .env.example .env
+# then edit .env with your values
+```
+
+The Appwrite SDK is initialized in `lib/appwrite.ts`. Ensure your credentials are set before running `npm run dev`.
