@@ -27,6 +27,7 @@ export async function addStudent(data: StudentFormData) {
         photoUrl: data.photoUrl || "",
         amountPaid: data.amountPaid ?? 0,
         paymentType: data.paymentType || "monthly",
+        schoolFeeAmount: data.schoolFeeAmount ?? 0,
       }
     );
     return response;
@@ -390,12 +391,43 @@ export async function getStudents(): Promise<Student[]> {
 
 // Fetches all students from the database
 export const getStudentById = async (
-  id: number
+  id: string
 ): Promise<Student | undefined> => {
-  return simulateApiCall(() => {
-    const students = getFromLocalStorage<Student[]>(STUDENTS_KEY, []);
-    return students.find((s) => s.id === id);
-  });
+  try {
+    const doc = await databases.getDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
+      id
+    );
+
+    return {
+      id: doc.$id, // 💥 THIS is what you need, babe!
+      name: doc.name,
+      photoUrl: doc.photoUrl,
+      grade: doc.grade,
+      age: doc.age,
+      paymentType: doc.paymentType,
+      amountPaid: doc.amountPaid,
+      studentId: doc.studentId,
+      personalId: doc.personalId,
+      dob: doc.dob,
+      registrationDate: doc.registrationDate,
+      yearsOfEnroll: doc.yearsOfEnroll,
+      parentName: doc.parentName,
+      gender: doc.gender,
+      nationality: doc.nationality,
+      religion: doc.religion,
+      canTransferCertificate: doc.canTransferCertificate,
+      address: doc.address,
+      contactNumber: doc.contactNumber,
+      churchName: doc.churchName,
+      monthlyPayments: doc.monthlyPayments,
+    } as Student;
+  } catch (error: any) {
+    throw new Error(
+      "Failed to fetch student: " + (error?.message || "unknown")
+    );
+  }
 };
 
 // Updates a student document by its ID
@@ -404,14 +436,28 @@ export async function updateStudent(
   data: Partial<StudentFormData>
 ) {
   try {
+    console.log("🔄 Updating student with ID:", documentId);
+    console.log("📦 Update data:", data);
+
+    if (!documentId) {
+      throw new Error("No document ID provided");
+    }
+
+    const payload = Object.fromEntries(
+      Object.entries(data).filter(([_, v]) => v !== undefined)
+    );
+
     const updated = await databases.updateDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
       documentId,
-      data
+      payload
     );
+
+    console.log("✅ Update successful:", updated);
     return updated;
   } catch (error: any) {
+    console.error("❌ Update failed:", error);
     throw new Error("Update failed: " + (error?.message || "unknown"));
   }
 }
@@ -536,16 +582,41 @@ export const getTeacherById = async (
 export const addTeacher = async (
   teacherData: TeacherFormData
 ): Promise<Teacher> => {
-  return simulateApiCall(() => {
-    const currentTeachers = getFromLocalStorage<Teacher[]>(TEACHERS_KEY, []);
-    const newTeacher: Teacher = {
-      ...teacherData,
-      id: getNextId(),
+  // return simulateApiCall(() => {
+  //   const currentTeachers = getFromLocalStorage<Teacher[]>(TEACHERS_KEY, []);
+  //   const newTeacher: Teacher = {
+  //     ...teacherData,
+  //     id: getNextId(),
+  //   };
+  //   const updatedTeachers = [...currentTeachers, newTeacher];
+  //   setToLocalStorage(TEACHERS_KEY, updatedTeachers);
+  //   return newTeacher;
+  // });
+  try {
+    const response = await databases.createDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
+      ID.unique(),
+      teacherData
+    );
+
+    // Map Appwrite document fields to Teacher type
+    const teacher: Teacher = {
+      id: response.$id,
+      name: response.name,
+      email: response.email,
+      subject: response.subject,
+      hireDate: response.hireDate,
+      age: response.age,
+      grade: response.grade,
+      teacherId: response.teacherId,
     };
-    const updatedTeachers = [...currentTeachers, newTeacher];
-    setToLocalStorage(TEACHERS_KEY, updatedTeachers);
-    return newTeacher;
-  });
+
+    return teacher;
+  } catch (error) {
+    console.error("Failed to add teacher:", error);
+    throw error;
+  }
 };
 
 export const updateTeacher = async (

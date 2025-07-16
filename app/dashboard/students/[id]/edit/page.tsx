@@ -16,7 +16,7 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
-  const studentId = Number(params.id as string);
+  const studentId = params.id as string;
   const { toast } = useToast();
 
   const [student, setStudent] = useState<Student | null>(null);

@@ -1,23 +1,47 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { studentSchema, type StudentFormData } from "@/types/schema";
 import type { Student } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { CalendarIcon, DollarSign, ImageIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isValid } from "date-fns";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface StudentFormProps {
   student?: Student; // Student object if editing, includes 'id'
@@ -26,7 +50,12 @@ interface StudentFormProps {
   submitButtonText?: string;
 }
 
-export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText = "Submit" }: StudentFormProps) {
+export function StudentForm({
+  student,
+  onSubmit,
+  isSubmitting,
+  submitButtonText = "Submit",
+}: StudentFormProps) {
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
@@ -38,8 +67,16 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
       amountPaid: student?.amountPaid ?? undefined,
       studentId: student?.studentId || "",
       personalId: student?.personalId || "",
-      dob: student?.dob ? (isValid(parseISO(student.dob)) ? format(parseISO(student.dob), "yyyy-MM-dd") : "") : "",
-      registrationDate: student?.registrationDate ? (isValid(parseISO(student.registrationDate)) ? format(parseISO(student.registrationDate), "yyyy-MM-dd") : "") : "",
+      dob: student?.dob
+        ? isValid(parseISO(student.dob))
+          ? format(parseISO(student.dob), "yyyy-MM-dd")
+          : ""
+        : "",
+      registrationDate: student?.registrationDate
+        ? isValid(parseISO(student.registrationDate))
+          ? format(parseISO(student.registrationDate), "yyyy-MM-dd")
+          : ""
+        : "",
       yearsOfEnroll: student?.yearsOfEnroll ?? undefined,
       parentName: student?.parentName || "",
       gender: student?.gender || "",
@@ -62,8 +99,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-xl">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline">{student ? "Edit Student" : "Add New Student"}</CardTitle>
-        <CardDescription>{student ? "Update the student's details below." : "Fill in the form to add a new student."}</CardDescription>
+        <CardTitle className="text-2xl font-headline">
+          {student ? "Edit Student" : "Add New Student"}
+        </CardTitle>
+        <CardDescription>
+          {student
+            ? "Update the student's details below."
+            : "Fill in the form to add a new student."}
+        </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
@@ -75,7 +118,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
-                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="Simon Linn" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -86,7 +131,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Student ID</FormLabel>
-                    <FormControl><Input placeholder="S1001" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="S1001" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -118,15 +165,20 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <FormField
+              <FormField
                 control={form.control}
                 name="paymentType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Payment Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Monthly">Monthly</SelectItem>
@@ -140,7 +192,15 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
               <FormField
                 control={form.control}
                 name="amountPaid"
-                render={({ field: { onChange: rhfOnChange, onBlur, name, ref, value: formValue } }) => (
+                render={({
+                  field: {
+                    onChange: rhfOnChange,
+                    onBlur,
+                    name,
+                    ref,
+                    value: formValue,
+                  },
+                }) => (
                   <FormItem>
                     <FormLabel>Amount Paid</FormLabel>
                     <div className="relative">
@@ -154,10 +214,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                           ref={ref}
                           onBlur={onBlur}
                           className="pl-10"
-                          value={formValue === undefined || formValue === null ? '' : String(formValue)}
-                          onChange={e => {
+                          value={
+                            formValue === undefined || formValue === null
+                              ? ""
+                              : String(formValue)
+                          }
+                          onChange={(e) => {
                             const val = e.target.value;
-                            rhfOnChange(val === '' ? undefined : +val);
+                            rhfOnChange(val === "" ? undefined : +val);
                           }}
                         />
                       </FormControl>
@@ -169,7 +233,15 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
               <FormField
                 control={form.control}
                 name="grade"
-                render={({ field: { onChange: rhfOnChange, onBlur, name, ref, value: formValue } }) => (
+                render={({
+                  field: {
+                    onChange: rhfOnChange,
+                    onBlur,
+                    name,
+                    ref,
+                    value: formValue,
+                  },
+                }) => (
                   <FormItem>
                     <FormLabel>Grade</FormLabel>
                     <FormControl>
@@ -179,10 +251,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                         name={name}
                         ref={ref}
                         onBlur={onBlur}
-                        value={formValue === undefined || formValue === null ? '' : String(formValue)}
-                        onChange={e => {
+                        value={
+                          formValue === undefined || formValue === null
+                            ? ""
+                            : String(formValue)
+                        }
+                        onChange={(e) => {
                           const val = e.target.value;
-                          rhfOnChange(val === '' ? undefined : +val);
+                          rhfOnChange(val === "" ? undefined : +val);
                         }}
                       />
                     </FormControl>
@@ -191,12 +267,20 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 )}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="age"
-                render={({ field: { onChange: rhfOnChange, onBlur, name, ref, value: formValue } }) => (
+                render={({
+                  field: {
+                    onChange: rhfOnChange,
+                    onBlur,
+                    name,
+                    ref,
+                    value: formValue,
+                  },
+                }) => (
                   <FormItem>
                     <FormLabel>Age</FormLabel>
                     <FormControl>
@@ -206,10 +290,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                         name={name}
                         ref={ref}
                         onBlur={onBlur}
-                        value={formValue === undefined || formValue === null ? '' : String(formValue)}
-                        onChange={e => {
+                        value={
+                          formValue === undefined || formValue === null
+                            ? ""
+                            : String(formValue)
+                        }
+                        onChange={(e) => {
                           const val = e.target.value;
-                          rhfOnChange(val === '' ? undefined : +val);
+                          rhfOnChange(val === "" ? undefined : +val);
                         }}
                       />
                     </FormControl>
@@ -217,10 +305,18 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                   </FormItem>
                 )}
               />
-               <FormField
+              <FormField
                 control={form.control}
                 name="yearsOfEnroll"
-                render={({ field: { onChange: rhfOnChange, onBlur, name, ref, value: formValue } }) => (
+                render={({
+                  field: {
+                    onChange: rhfOnChange,
+                    onBlur,
+                    name,
+                    ref,
+                    value: formValue,
+                  },
+                }) => (
                   <FormItem>
                     <FormLabel>Years of Enrollment</FormLabel>
                     <FormControl>
@@ -230,10 +326,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                         name={name}
                         ref={ref}
                         onBlur={onBlur}
-                        value={formValue === undefined || formValue === null ? '' : String(formValue)}
-                        onChange={e => {
+                        value={
+                          formValue === undefined || formValue === null
+                            ? ""
+                            : String(formValue)
+                        }
+                        onChange={(e) => {
                           const val = e.target.value;
-                          rhfOnChange(val === '' ? undefined : +val);
+                          rhfOnChange(val === "" ? undefined : +val);
                         }}
                       />
                     </FormControl>
@@ -253,8 +353,18 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                     <Popover open={dobOpen} onOpenChange={setDobOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value && isValid(parseISO(field.value)) ? format(parseISO(field.value), "PPP") : <span>Pick a date</span>}
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value && isValid(parseISO(field.value)) ? (
+                              format(parseISO(field.value), "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -262,9 +372,20 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
-                          onSelect={(date) => { field.onChange(date ? format(date, "yyyy-MM-dd") : ""); setDobOpen(false); }}
-                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                          selected={
+                            field.value && isValid(parseISO(field.value))
+                              ? parseISO(field.value)
+                              : undefined
+                          }
+                          onSelect={(date) => {
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : ""
+                            );
+                            setDobOpen(false);
+                          }}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -282,8 +403,18 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                     <Popover open={regDateOpen} onOpenChange={setRegDateOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value && isValid(parseISO(field.value)) ? format(parseISO(field.value), "PPP") : <span>Pick a date</span>}
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value && isValid(parseISO(field.value)) ? (
+                              format(parseISO(field.value), "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -291,8 +422,17 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
-                          onSelect={(date) => { field.onChange(date ? format(date, "yyyy-MM-dd") : ""); setRegDateOpen(false);}}
+                          selected={
+                            field.value && isValid(parseISO(field.value))
+                              ? parseISO(field.value)
+                              : undefined
+                          }
+                          onSelect={(date) => {
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : ""
+                            );
+                            setRegDateOpen(false);
+                          }}
                           disabled={(date) => date > new Date()}
                           initialFocus
                         />
@@ -303,14 +443,16 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="personalId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Personal ID / Passport No.</FormLabel>
-                  <FormControl><Input placeholder="National ID or Passport" {...field} /></FormControl>
+                  <FormControl>
+                    <Input placeholder="National ID or Passport" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -323,7 +465,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Parent/Guardian Name</FormLabel>
-                    <FormControl><Input placeholder="Jane Doe" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="Jane Doe" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -334,13 +478,19 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
-                    <FormControl><Input type="tel" placeholder="+1-555-123-4567" {...field} /></FormControl>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        placeholder="+1-555-123-4567"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
@@ -348,15 +498,22 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Male">Male</SelectItem>
                         <SelectItem value="Female">Female</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
-                        <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                        <SelectItem value="Prefer not to say">
+                          Prefer not to say
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -369,7 +526,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nationality</FormLabel>
-                    <FormControl><Input placeholder="American" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="American" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -380,7 +539,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Religion</FormLabel>
-                    <FormControl><Input placeholder="Christianity" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="Christianity" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -393,43 +554,60 @@ export function StudentForm({ student, onSubmit, isSubmitting, submitButtonText 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Address</FormLabel>
-                  <FormControl><Textarea placeholder="123 Main St, Anytown, USA" {...field} /></FormControl>
+                  <FormControl>
+                    <Textarea
+                      placeholder="123 Main St, Anytown, USA"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <FormField
+              <FormField
                 control={form.control}
                 name="churchName"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Church Name (if any)</FormLabel>
-                    <FormControl><Input placeholder="First Community Church" {...field} /></FormControl>
+                    <FormControl>
+                      <Input placeholder="First Community Church" {...field} />
+                    </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
-                <FormField
+              />
+              <FormField
                 control={form.control}
                 name="canTransferCertificate"
                 render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 mt-6 md:mt-7 shadow-sm">
-                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 mt-6 md:mt-7 shadow-sm">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                     <div className="space-y-1 leading-none">
-                        <FormLabel>Transfer Certificate Eligible?</FormLabel>
-                        <FormDescription>Check if the student can receive a transfer certificate.</FormDescription>
+                      <FormLabel>Transfer Certificate Eligible?</FormLabel>
+                      <FormDescription>
+                        Check if the student can receive a transfer certificate.
+                      </FormDescription>
                     </div>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
             </div>
-
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               {isSubmitting ? "Submitting..." : submitButtonText}
             </Button>
           </CardFooter>
