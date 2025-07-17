@@ -1,21 +1,21 @@
-import type { StudentFormData, TeacherFormData } from "./schema";
+import type { StudentFormData, TeacherFormData } from './schema';
 
 export interface MonthlyPayment {
   month: string;
-  status: "Paid" | "Unpaid";
+  status: 'Paid' | 'Unpaid';
   amount: number;
-  paidOn?: string; // ISO date string
+  paidOn?: string;
 }
 
 export interface Student {
   id: string;
   name: string;
-  photoUrl?: string;
+  photoUrl: string;
   grade: number;
   age: number;
-  paymentType: "Monthly" | "Yearly";
-  amountPaid: number; // For Yearly, this is the total. For Monthly, this is the total annual fee.
-  schoolFeeAmount: number; // Annual fee
+  paymentType: 'Monthly' | 'Yearly';
+  amountPaid: number;
+  schoolFeeAmount: number;
   studentId: string;
   personalId: string;
   dob: string;
@@ -45,12 +45,12 @@ export interface Teacher {
 
 export interface PendingStudentApplication extends StudentFormData {
   applicationId: string;
-  status: "pending";
+  status: 'pending';
   submittedAt: string; // ISO date string
 }
 
 export interface PendingTeacherApplication extends TeacherFormData {
   applicationId: string;
-  status: "pending";
+  status: 'pending';
   submittedAt: string; // ISO date string
 }
