@@ -1,25 +1,32 @@
+'use client';
 
-"use client";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StudentTable } from '@/components/students/StudentTable';
+import type { Student } from '@/types';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { StudentTable } from "@/components/students/StudentTable";
-import type { Student } from "@/types";
-import { getStudents, deleteStudent as deleteStudentService } from "@/lib/dataService";
-import { PlusCircle, Search, Users as UsersIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { ConfirmationDialog } from "@/components/shared/ConfirmationDialog";
-import { Input } from "@/components/ui/input";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { isGuest as checkIsGuest, isAdmin as checkIsAdmin } from "@/lib/authService";
+import {
+  getStudents,
+  deleteStudent as deleteStudentService,
+  getStudentsSorted,
+} from '@/lib/dataService';
+import { PlusCircle, Search, Users as UsersIcon } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
+import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import {
+  isGuest as checkIsGuest,
+  isAdmin as checkIsAdmin,
+} from '@/lib/authService';
 
 export default function ViewStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
@@ -36,8 +43,12 @@ export default function ViewStudentsPage() {
         setStudents(fetchedStudents);
         setFilteredStudents(fetchedStudents);
       } catch (error) {
-        console.error("Failed to fetch students:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load student data." });
+        console.error('Failed to fetch students:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not load student data.',
+        });
       } finally {
         setIsLoading(false);
       }
@@ -45,16 +56,43 @@ export default function ViewStudentsPage() {
     fetchInitialStudents();
   }, [toast]);
 
- useEffect(() => {
+  useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = students.filter(item =>
-      item.name.toLowerCase().includes(lowercasedFilter) ||
-      item.studentId.toLowerCase().includes(lowercasedFilter) ||
-      (item.personalId && item.personalId.toLowerCase().includes(lowercasedFilter)) ||
-      (item.contactNumber && item.contactNumber.toLowerCase().includes(lowercasedFilter))
+    const filteredData = students.filter(
+      item =>
+        item.name.toLowerCase().includes(lowercasedFilter) ||
+        item.studentId.toLowerCase().includes(lowercasedFilter) ||
+        (item.personalId &&
+          item.personalId.toLowerCase().includes(lowercasedFilter)) ||
+        (item.contactNumber &&
+          item.contactNumber.toLowerCase().includes(lowercasedFilter))
     );
     setFilteredStudents(filteredData);
   }, [searchTerm, students]);
+
+  useEffect(() => {
+    setIsGuest(checkIsGuest());
+    setIsAdmin(checkIsAdmin());
+
+    async function fetchSortedStudents() {
+      setIsLoading(true);
+      try {
+        const students = await getStudentsSorted('grade', 'asc'); // 💅 Change to your desired sort field
+        setStudents(students);
+        setFilteredStudents(students);
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not load sorted students.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchSortedStudents();
+  }, [toast]);
 
   const handleDeleteRequest = (student: Student) => {
     if (isGuest) return;
@@ -64,81 +102,128 @@ export default function ViewStudentsPage() {
 
   const confirmDelete = async () => {
     if (isGuest || !studentToDelete) return;
-    
+
     try {
       const success = await deleteStudentService(studentToDelete.id);
       if (success) {
-        const updatedStudents = students.filter(s => s.id !== studentToDelete.id);
+        const updatedStudents = students.filter(
+          s => s.id !== studentToDelete.id
+        );
         setStudents(updatedStudents);
-        setFilteredStudents(updatedStudents); 
-        toast({ title: "Student Deleted", description: `${studentToDelete.name} has been removed.` });
+        setFilteredStudents(updatedStudents);
+        toast({
+          title: 'Student Deleted',
+          description: `${studentToDelete.name} has been removed.`,
+        });
       } else {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete student." });
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to delete student.',
+        });
       }
     } catch (error) {
-       toast({ variant: "destructive", title: "Error", description: "An error occurred while deleting the student." });
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'An error occurred while deleting the student.',
+      });
     }
-    
+
     setDialogOpen(false);
     setStudentToDelete(null);
   };
 
   if (isLoading) {
     return (
-       <div className="space-y-6">
-        <PageHeader title="Manage Students" description="View, add, edit, or delete student records.">
+      <div className='space-y-6'>
+        <PageHeader
+          title='Manage Students'
+          description='View, add, edit, or delete student records.'
+        >
           {isAdmin && (
-            <Button asChild variant="default" className="bg-primary hover:bg-primary/90">
-              <Link href="/dashboard/students/add">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Student
+            <Button
+              asChild
+              variant='default'
+              className='bg-primary hover:bg-primary/90'
+            >
+              <Link href='/dashboard/students/add'>
+                <PlusCircle className='mr-2 h-4 w-4' /> Add New Student
               </Link>
             </Button>
           )}
         </PageHeader>
-        <div className="flex justify-center items-center h-64">
+        <div className='flex justify-center items-center h-64'>
           <LoadingSpinner size={32} />
-          <p className="ml-2">Loading students...</p>
+          <p className='ml-2'>Loading students...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Manage Students" description="View, add, edit, or delete student records.">
+    <div className='space-y-6'>
+      <PageHeader
+        title='Manage Students'
+        description='View, add, edit, or delete student records.'
+      >
         {isAdmin && (
-          <Button asChild variant="default" className="bg-primary hover:bg-primary/90">
-            <Link href="/dashboard/students/add">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Student
+          <Button
+            asChild
+            variant='default'
+            className='bg-primary hover:bg-primary/90'
+          >
+            <Link href='/dashboard/students/add'>
+              <PlusCircle className='mr-2 h-4 w-4' /> Add New Student
             </Link>
           </Button>
         )}
       </PageHeader>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <div className='relative flex items-center justify-between mb-4'>
+        <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground' />
         <Input
-          type="search"
-          placeholder="Search students by name, ID, contact..."
-          className="w-full max-w-md pl-10 pr-4 py-2"
+          type='search'
+          placeholder='Search students by name, ID, contact...'
+          className='w-full max-w-md pl-10 pr-4 py-2'
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
         />
+
+        <select
+          onChange={async e => {
+            const sortField = e.target.value;
+            const students = await getStudentsSorted(sortField as any, 'asc');
+            setStudents(students);
+            setFilteredStudents(students);
+          }}
+          className='border-2 border-white bg-transparent p-2 rounded-md text-muted-foreground text-sm'
+        >
+          <option value='grade'>Sort by Grade</option>
+          <option value='$id'>Sort by ID</option>
+          <option value='registrationDate'>Sort by Registration Date</option>
+        </select>
       </div>
 
       {filteredStudents.length > 0 ? (
-        <StudentTable students={filteredStudents} onDelete={handleDeleteRequest} isGuest={isGuest} />
+        <StudentTable
+          students={filteredStudents}
+          onDelete={handleDeleteRequest}
+          isGuest={isGuest}
+        />
       ) : (
-        <div className="text-center py-12">
-          <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-2 text-lg font-semibold">No Students Found</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {searchTerm ? "No students match your search." : "There are no students in the system yet. Try adding one if you are an admin."}
+        <div className='text-center py-12'>
+          <UsersIcon className='mx-auto h-12 w-12 text-muted-foreground' />
+          <h3 className='mt-2 text-lg font-semibold'>No Students Found</h3>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            {searchTerm
+              ? 'No students match your search.'
+              : 'There are no students in the system yet. Try adding one if you are an admin.'}
           </p>
           {!searchTerm && isAdmin && (
-            <Button asChild variant="outline" className="mt-4">
-              <Link href="/dashboard/students/add">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add First Student
+            <Button asChild variant='outline' className='mt-4'>
+              <Link href='/dashboard/students/add'>
+                <PlusCircle className='mr-2 h-4 w-4' /> Add First Student
               </Link>
             </Button>
           )}
@@ -149,7 +234,7 @@ export default function ViewStudentsPage() {
         isOpen={dialogOpen}
         onOpenChange={setDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Student"
+        title='Delete Student'
         description={`Are you sure you want to delete ${studentToDelete?.name}? This action cannot be undone.`}
       />
     </div>

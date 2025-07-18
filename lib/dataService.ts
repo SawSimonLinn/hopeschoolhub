@@ -1,3 +1,5 @@
+import { Query } from 'appwrite';
+
 import type { StudentFormData, TeacherFormData } from '@/types/schema';
 import type {
   Student,
@@ -15,6 +17,49 @@ const PENDING_STUDENTS_KEY = 'hopeSchoolHubPendingStudents_v2';
 const PENDING_TEACHERS_KEY = 'hopeSchoolHubPendingTeachers_v2';
 const NEXT_DB_ID_KEY = 'hopeSchoolHubNextDbId_v2';
 const DEMO_DATA_LOADED_KEY = 'demoDataLoaded_v4'; // Incremented version to allow reloading
+
+//
+export const getStudentsSorted = async (
+  sortBy: 'grade' | '$id' | 'registrationDate',
+  order: 'asc' | 'desc' = 'asc'
+) => {
+  const orderQuery =
+    order === 'asc' ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy);
+
+  try {
+    const response = await databases.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
+      [orderQuery]
+    );
+
+    return response.documents.map(doc => ({
+      id: doc.$id,
+      name: doc.name,
+      grade: doc.grade,
+      age: doc.age,
+      paymentType: doc.paymentType,
+      amountPaid: doc.amountPaid,
+      studentId: doc.studentId,
+      photoUrl: doc.photoUrl || '',
+      personalId: doc.personalId,
+      dob: doc.dob,
+      registrationDate: doc.registrationDate,
+      yearsOfEnroll: doc.yearsOfEnroll,
+      parentName: doc.parentName,
+      gender: doc.gender,
+      nationality: doc.nationality,
+      religion: doc.religion,
+      canTransferCertificate: doc.canTransferCertificate,
+      address: doc.address,
+      contactNumber: doc.contactNumber,
+      churchName: doc.churchName,
+    })) as Student[];
+  } catch (error) {
+    console.error('Failed to fetch sorted students:', error);
+    return [];
+  }
+};
 
 // --- Local Storage Interaction ---
 function getFromLocalStorage<T>(key: string, defaultValue: T): T {
@@ -142,32 +187,34 @@ async function simulateApiCall<T>(action: () => T | Promise<T>): Promise<T> {
 //   }
 // };
 
-const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
 export const addStudent = async (data: StudentFormData) => {
-  const studentId = ID.unique(); // generate the ID for student
+  const studentId = ID.unique(); // 💖 Unique ID for student
 
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const schoolFeeAmount = data.schoolFeeAmount ?? 0;
+  const monthlyFee = schoolFeeAmount / 12;
+
+  // 💅 Step 1: Add the student (exclude monthlyPayments)
   const studentDataToSend = {
     ...data,
     photoUrl: data.photoUrl || '',
-    schoolFeeAmount: data.schoolFeeAmount ?? 0,
-    monthlyPayments: undefined, // don’t send JSON here anymore
+    schoolFeeAmount,
   };
 
-  // 1. Create student first 💁‍♀️
   await databases.createDocument(
     process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
@@ -175,25 +222,29 @@ export const addStudent = async (data: StudentFormData) => {
     studentDataToSend
   );
 
-  // 2. Create monthlyPayments entries, babe 💸
-  const monthlyPaymentPromises = months.map(month => {
-    return databases.createDocument(
+  // 💸 Step 2: Create monthly payment docs
+  const monthlyPaymentPromises = months.map(month =>
+    databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_PAYMENTS_COLLECTION_ID!,
       ID.unique(),
       {
         studentId,
         month,
-        amount: data.schoolFeeAmount ? data.schoolFeeAmount / 12 : 0,
+        amount: monthlyFee,
         status: 'Unpaid',
         paidOn: null,
       }
-    );
-  });
+    )
+  );
 
   await Promise.all(monthlyPaymentPromises);
 
-  return { message: 'Student & payments added successfully!' };
+  return {
+    success: true,
+    studentId,
+    message: 'Student and monthly payments created 🎉',
+  };
 };
 
 export const getStudents = async (): Promise<Student[]> => {
@@ -215,13 +266,49 @@ export const getStudents = async (): Promise<Student[]> => {
 };
 
 // Fetches all students from the database
+
 export const getStudentById = async (id: string): Promise<Student | null> => {
   try {
+    // Fetch student doc first 🧠
     const doc = await databases.getDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
       id
     );
+
+    // Fetch monthly payments from separate collection 💸
+    const paymentsRes = await databases.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_PAYMENTS_COLLECTION_ID!,
+      [Query.equal('studentId', id)]
+    );
+
+    // Sort payments in calendar order 🗓️
+    const monthOrder = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    const sortedPayments: MonthlyPayment[] = paymentsRes.documents
+      .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month))
+      .map(payment => ({
+        month: payment.month,
+        status: payment.status,
+        amount: payment.amount,
+        paidOn: payment.paidOn,
+      }));
+
+    // Return combined result 💅
     return {
       id: doc.$id,
       name: doc.name,
@@ -243,12 +330,8 @@ export const getStudentById = async (id: string): Promise<Student | null> => {
       address: doc.address,
       contactNumber: doc.contactNumber,
       churchName: doc.churchName,
-      monthlyPayments: Array.isArray(doc.monthlyPayments)
-        ? doc.monthlyPayments
-        : typeof doc.monthlyPayments === 'string'
-        ? JSON.parse(doc.monthlyPayments || '[]')
-        : [],
-    } as Student;
+      monthlyPayments: sortedPayments,
+    };
   } catch (error) {
     console.error('Failed to get student by ID:', error);
     return null;
@@ -304,38 +387,48 @@ export const updateStudentPaymentStatus = async (
   monthIndex: number,
   newStatus: 'Paid' | 'Unpaid'
 ): Promise<Student> => {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const month = months[monthIndex]; // 💃 Convert index to proper month string
+
   try {
-    const doc = await databases.getDocument(
+    const res = await databases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
-      studentId
+      process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_PAYMENTS_COLLECTION_ID!,
+      [Query.equal('studentId', studentId), Query.equal('month', month)]
     );
 
-    const monthlyPayments = Array.isArray(doc.monthlyPayments)
-      ? doc.monthlyPayments
-      : JSON.parse(doc.monthlyPayments || '[]');
-
-    if (!monthlyPayments[monthIndex]) {
+    if (res.documents.length === 0) {
       throw new Error(`Payment entry not found for index ${monthIndex}`);
     }
 
-    monthlyPayments[monthIndex].status = newStatus;
-    monthlyPayments[monthIndex].paidOn =
-      newStatus === 'Paid' ? formatISO(new Date()) : undefined;
+    const paymentDoc = res.documents[0];
 
-    const updated = await databases.updateDocument(
+    await databases.updateDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
-      studentId,
+      process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_PAYMENTS_COLLECTION_ID!,
+      paymentDoc.$id,
       {
-        monthlyPayments,
+        status: newStatus,
+        paidOn: newStatus === 'Paid' ? formatISO(new Date()) : null,
       }
     );
 
-    return {
-      id: updated.$id,
-      ...updated,
-    };
+    // Optionally, re-fetch student here if needed
+    return await getStudentById(studentId);
   } catch (error: any) {
     console.error('Failed to update payment status:', error);
     throw new Error(
