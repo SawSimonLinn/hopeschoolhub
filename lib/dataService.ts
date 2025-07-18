@@ -7,7 +7,7 @@ import type {
   MonthlyPayment,
 } from '@/types';
 import { format, formatISO, addMonths } from 'date-fns';
-import { databases, ID } from '@/lib/appwrite';
+import { databases, ID, account } from '@/lib/appwrite';
 
 const STUDENTS_KEY = 'hopeSchoolHubStudents_v2';
 const TEACHERS_KEY = 'hopeSchoolHubTeachers_v2';
@@ -99,282 +99,101 @@ async function simulateApiCall<T>(action: () => T | Promise<T>): Promise<T> {
   });
 }
 
-// --- Demo Data ---
-const demoStudents: Omit<Student, 'id' | 'monthlyPayments'>[] = [
-  {
-    name: 'John Smith',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 10,
-    age: 16,
-    paymentType: 'Monthly',
-    amountPaid: 1800.0, // This is now total annual fee
-    studentId: 'S1001',
-    personalId: 'P123456789',
-    dob: '2008-05-20',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 2,
-    parentName: 'Jane Smith',
-    gender: 'Male',
-    nationality: 'American',
-    religion: 'Christianity',
-    canTransferCertificate: true,
-    address: '123 Main St, Anytown, USA',
-    contactNumber: '555-123-4567',
-    churchName: 'First Community Church',
-  },
-  {
-    name: 'Emily Johnson',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 11,
-    age: 17,
-    paymentType: 'Yearly',
-    amountPaid: 1500.0,
-    studentId: 'S1002',
-    personalId: 'P987654321',
-    dob: '2007-08-15',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 3,
-    parentName: 'Robert Johnson',
-    gender: 'Female',
-    nationality: 'Canadian',
-    religion: 'Christianity',
-    canTransferCertificate: false,
-    address: '456 Oak Ave, Otherville, Canada',
-    contactNumber: '555-987-6543',
-    churchName: 'N/A',
-  },
-  {
-    name: 'Carlos Martinez',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 9,
-    age: 15,
-    paymentType: 'Monthly',
-    amountPaid: 2400.0,
-    studentId: 'S1003',
-    personalId: 'P555666777',
-    dob: '2009-02-10',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 1,
-    parentName: 'Maria Martinez',
-    gender: 'Male',
-    nationality: 'Mexican',
-    religion: 'Catholicism',
-    canTransferCertificate: true,
-    address: '789 Pine Rd, Somewhere, USA',
-    contactNumber: '555-111-2222',
-    churchName: 'St. Marys Church',
-  },
-  {
-    name: 'Aisha Khan',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 12,
-    age: 18,
-    paymentType: 'Monthly',
-    amountPaid: 3000.0,
-    studentId: 'S1004',
-    personalId: 'P888999000',
-    dob: '2006-11-30',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 4,
-    parentName: 'Fatima Khan',
-    gender: 'Female',
-    nationality: 'Pakistani',
-    religion: 'Islam',
-    canTransferCertificate: true,
-    address: '321 Maple Ln, Anytown, USA',
-    contactNumber: '555-333-4444',
-    churchName: 'N/A',
-  },
-  {
-    name: 'Kenji Tanaka',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 10,
-    age: 16,
-    paymentType: 'Yearly',
-    amountPaid: 1650.0,
-    studentId: 'S1005',
-    personalId: 'P444555666',
-    dob: '2008-04-22',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 2,
-    parentName: 'Yuki Tanaka',
-    gender: 'Male',
-    nationality: 'Japanese',
-    religion: 'Buddhism',
-    canTransferCertificate: true,
-    address: '15 Cherry Blossom St, Tokyo, Japan',
-    contactNumber: '555-777-8888',
-    churchName: 'N/A',
-  },
-  {
-    name: 'Olivia Chen',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 9,
-    age: 14,
-    paymentType: 'Monthly',
-    amountPaid: 2100.0,
-    studentId: 'S1006',
-    personalId: 'P111222333',
-    dob: '2010-01-18',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 1,
-    parentName: 'David Chen',
-    gender: 'Female',
-    nationality: 'American',
-    religion: 'N/A',
-    canTransferCertificate: false,
-    address: '987 Birch Ave, Someplace, USA',
-    contactNumber: '555-444-5555',
-    churchName: 'N/A',
-  },
-  {
-    name: 'Chloe Williams',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 11,
-    age: 17,
-    paymentType: 'Monthly',
-    amountPaid: 2200.0,
-    studentId: 'S1007',
-    personalId: 'P777888999',
-    dob: '2007-03-12',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 3,
-    parentName: 'Sophia Williams',
-    gender: 'Female',
-    nationality: 'Australian',
-    religion: 'Christianity',
-    canTransferCertificate: true,
-    address: '555 Wattle St, Sydney, Australia',
-    contactNumber: '555-666-7777',
-    churchName: 'N/A',
-  },
-  {
-    name: 'Liam Brown',
-    photoUrl: 'https://placehold.co/400x400.png',
-    grade: 9,
-    age: 15,
-    paymentType: 'Yearly',
-    amountPaid: 1550.0,
-    studentId: 'S1008',
-    personalId: 'P888999111',
-    dob: '2009-09-09',
-    registrationDate: formatISO(new Date(), { representation: 'date' }),
-    yearsOfEnroll: 1,
-    parentName: 'James Brown',
-    gender: 'Male',
-    nationality: 'British',
-    religion: 'N/A',
-    canTransferCertificate: false,
-    address: '22 Acacia Ave, London, UK',
-    contactNumber: '555-222-3333',
-    churchName: 'N/A',
-  },
-];
-
-const demoTeachers: Omit<Teacher, 'id'>[] = [
-  {
-    name: 'Michael Davis',
-    email: 'michael.davis@example.com',
-    subject: 'Mathematics',
-    hireDate: '2020-08-01',
-    age: 35,
-    grade: 10,
-    teacherId: 'T001',
-  },
-  {
-    name: 'Sarah Wilson',
-    email: 'sarah.wilson@example.com',
-    subject: 'English Literature',
-    hireDate: '2018-09-15',
-    age: 42,
-    grade: 11,
-    teacherId: 'T002',
-  },
-];
-
-// --- Data Initialization ---
-function initializeDemoData() {
-  if (typeof window === 'undefined') return;
-
-  if (localStorage.getItem(DEMO_DATA_LOADED_KEY)) return;
-
-  let students = getFromLocalStorage<Student[]>(STUDENTS_KEY, []);
-  if (students.length === 0) {
-    const demoStudentsWithIds = demoStudents.map((s, index) => {
-      const student: Student = {
-        ...s,
-        id: index + 1,
-      };
-      if (student.paymentType === 'Monthly') {
-        student.monthlyPayments = generateMonthlyPayments(student.amountPaid);
-      }
-      return student;
-    });
-    setToLocalStorage(STUDENTS_KEY, demoStudentsWithIds);
-  }
-
-  let teachers = getFromLocalStorage<Teacher[]>(TEACHERS_KEY, []);
-  if (teachers.length === 0) {
-    const demoTeachersWithIds = demoTeachers.map((t, index) => ({
-      ...t,
-      id: index + 100,
-    }));
-    setToLocalStorage(TEACHERS_KEY, demoTeachersWithIds);
-  }
-
-  localStorage.setItem(DEMO_DATA_LOADED_KEY, 'true');
-}
-
-initializeDemoData();
-initializeId();
-
 // --- Students ---
-export const addStudent = async (data: StudentFormData) => {
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+// export const addStudent = async (data: StudentFormData) => {
+//   const months = [
+//     'January',
+//     'February',
+//     'March',
+//     'April',
+//     'May',
+//     'June',
+//     'July',
+//     'August',
+//     'September',
+//     'October',
+//     'November',
+//     'December',
+//   ];
 
-  const monthlyPayments = months.map(month => ({
-    month,
-    status: 'Unpaid',
-    amount: data.schoolFeeAmount ? data.schoolFeeAmount / 12 : 0,
-  }));
+//   const monthlyPayments = months.map(month => ({
+//     month,
+//     status: 'Unpaid',
+//     amount: data.schoolFeeAmount ? data.schoolFeeAmount / 12 : 0,
+//   }));
+
+//   const studentDataToSend = {
+//     ...data,
+//     photoUrl: data.photoUrl || '',
+//     schoolFeeAmount: data.schoolFeeAmount ?? 0,
+//     monthlyPayments: JSON.stringify(monthlyPayments),
+//   };
+
+//   try {
+//     const response = await databases.createDocument(
+//       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+//       process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
+//       ID.unique(),
+//       studentDataToSend
+//     );
+//     return response;
+//   } catch (error) {
+//     throw new Error(`Failed to add student: ${(error as Error).message}`);
+//   }
+// };
+
+const months = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+export const addStudent = async (data: StudentFormData) => {
+  const studentId = ID.unique(); // generate the ID for student
+
   const studentDataToSend = {
     ...data,
     photoUrl: data.photoUrl || '',
     schoolFeeAmount: data.schoolFeeAmount ?? 0,
-    monthlyPayments: JSON.stringify(monthlyPayments),
+    monthlyPayments: undefined, // don’t send JSON here anymore
   };
 
+  // 1. Create student first 💁‍♀️
   await databases.createDocument(
     process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
-    ID.unique(),
+    studentId,
     studentDataToSend
   );
 
-  try {
-    const response = await databases.createDocument(
+  // 2. Create monthlyPayments entries, babe 💸
+  const monthlyPaymentPromises = months.map(month => {
+    return databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_PAYMENTS_COLLECTION_ID!,
       ID.unique(),
-      studentDataToSend
+      {
+        studentId,
+        month,
+        amount: data.schoolFeeAmount ? data.schoolFeeAmount / 12 : 0,
+        status: 'Unpaid',
+        paidOn: null,
+      }
     );
-    return response;
-  } catch (error) {
-    throw new Error(`Failed to add student: ${(error as Error).message}`);
-  }
+  });
+
+  await Promise.all(monthlyPaymentPromises);
+
+  return { message: 'Student & payments added successfully!' };
 };
 
 export const getStudents = async (): Promise<Student[]> => {
@@ -525,18 +344,6 @@ export const updateStudentPaymentStatus = async (
   }
 };
 
-//   return simulateApiCall(() => {
-//     let students = getFromLocalStorage<Student[]>(STUDENTS_KEY, []);
-//     const initialLength = students.length;
-//     students = students.filter((s) => s.id !== id);
-//     if (students.length < initialLength) {
-//       setToLocalStorage(STUDENTS_KEY, students);
-//       return true;
-//     }
-//     return false;
-//   });
-// };
-
 // --- Teachers ---
 export const getTeachers = async (): Promise<Teacher[]> => {
   try {
@@ -563,6 +370,8 @@ export const getTeachers = async (): Promise<Teacher[]> => {
 };
 
 export const getTeacherById = async (id: string): Promise<Teacher> => {
+  console.log('👀 teacherId:', id);
+
   try {
     const doc = await databases.getDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
@@ -643,15 +452,17 @@ export const updateTeacher = async (
   }
 };
 
-export const deleteTeacher = async (id: string): Promise<void> => {
+export const deleteTeacher = async (id: string): Promise<boolean> => {
   try {
     await databases.deleteDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_TEACHERS_COLLECTION_ID!,
       id
     );
+    return true;
   } catch (error: any) {
-    throw new Error('Delete failed: ' + (error?.message || 'unknown'));
+    console.error('❌ Failed to delete teacher:', error);
+    return false;
   }
 };
 

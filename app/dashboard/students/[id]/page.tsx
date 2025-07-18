@@ -373,13 +373,14 @@ export default function StudentDetailsPage() {
         </div>
 
         <div className='lg:col-span-1'>
-          {student.paymentType === 'Monthly' && student.monthlyPayments && (
-            <MonthlyPaymentTracker
-              student={student}
-              onUpdate={handlePaymentUpdate}
-              isGuest={isGuest}
-            />
-          )}
+          {student?.paymentType === 'Monthly' &&
+            Array.isArray(student?.monthlyPayments) && (
+              <MonthlyPaymentTracker
+                student={student}
+                onUpdate={handlePaymentUpdate}
+                isGuest={isGuest}
+              />
+            )}
         </div>
       </div>
 
