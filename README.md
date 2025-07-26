@@ -74,10 +74,9 @@ The most challenging part was implementing the **Monthly Fee Tracker**. Appwrite
     ```
 
 4.  Run the dev server:
-
-        ``` bash
-        npm run dev
-        ```
+    ```bash
+    npm run dev
+    ```
 
 ## 📧 Contact
 
