@@ -18,22 +18,57 @@ const PENDING_TEACHERS_KEY = 'hopeSchoolHubPendingTeachers_v2';
 const NEXT_DB_ID_KEY = 'hopeSchoolHubNextDbId_v2';
 const DEMO_DATA_LOADED_KEY = 'demoDataLoaded_v4'; // Incremented version to allow reloading
 
-//
+export async function getFinancialStats(): Promise<FinancialStatsData> {
+  const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+  const monthlyCollectionId =
+    process.env.NEXT_PUBLIC_APPWRITE_MONTHLY_COLLECTION_ID!;
+  const studentsCollectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!;
+
+  // Get all students
+  const studentsRes = await databases.listDocuments(dbId, studentsCollectionId);
+  const totalStudents = studentsRes.total;
+
+  // Get paid payments
+  const paidRes = await databases.listDocuments(dbId, monthlyCollectionId, [
+    Query.equal('status', 'paid'),
+  ]);
+
+  const paidStudents = new Set(paidRes.documents.map(doc => doc.studentId))
+    .size;
+  const collectedFee = paidRes.documents.reduce(
+    (sum, doc) => sum + (doc.amount || 0),
+    0
+  );
+
+  // Get pending payments
+  const pendingRes = await databases.listDocuments(dbId, monthlyCollectionId, [
+    Query.equal('status', 'pending'),
+  ]);
+  const pendingFee = pendingRes.documents.reduce(
+    (sum, doc) => sum + (doc.amount || 0),
+    0
+  );
+
+  return {
+    totalStudents,
+    paidStudents,
+    collectedFee,
+    pendingFee,
+  };
+}
+
 export const getStudentsSorted = async (
   sortBy: 'grade' | '$id' | 'registrationDate',
-  order: 'asc' | 'desc' = 'asc'
-) => {
-  const orderQuery =
-    order === 'asc' ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy);
-
+  order: 'asc' | 'desc'
+): Promise<Student[]> => {
   try {
-    const response = await databases.listDocuments(
+    const res = await databases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_STUDENTS_COLLECTION_ID!,
-      [orderQuery]
+      [order === 'asc' ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy)]
     );
 
-    return response.documents.map(doc => ({
+    return res.documents.map(doc => ({
       id: doc.$id,
       name: doc.name,
       grade: doc.grade,
@@ -54,7 +89,7 @@ export const getStudentsSorted = async (
       address: doc.address,
       contactNumber: doc.contactNumber,
       churchName: doc.churchName,
-    })) as Student[];
+    }));
   } catch (error) {
     console.error('Failed to fetch sorted students:', error);
     return [];

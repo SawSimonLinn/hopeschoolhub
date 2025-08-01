@@ -199,8 +199,8 @@ export default function ViewStudentsPage() {
           }}
           className='border-2 border-white bg-transparent p-2 rounded-md text-muted-foreground text-sm'
         >
-          <option value='grade'>Sort by Grade</option>
           <option value='$id'>Sort by ID</option>
+          <option value='grade'>Sort by Grade</option>
           <option value='registrationDate'>Sort by Registration Date</option>
         </select>
       </div>
